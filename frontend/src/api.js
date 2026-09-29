@@ -20,16 +20,16 @@ function formatError(detail) {
   return JSON.stringify(detail);
 }
 
-async function request(
-  if (res.status === 401 && unauthorizedHandler) {
-  unauthorizedHandler();
-}url, options = {}) {
+async function request(url, options = {}) {
   const token = getToken();
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
+   if (res.status === 401 && unauthorizedHandler) {
+  unauthorizedHandler();
+}
 
   const res = await fetch(`${BASE_URL}${url}`, { ...options, headers });
   let data = null;
