@@ -1,32 +1,51 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+function formatApiError(detail) {
+  if (!detail) return "Something went wrong";
 
-let onUnauthorized = null
+  if (typeof detail === "string") return detail;
 
-function withAuth(token) {
-  if (!token) return {}
-  const scheme = 'Be' + 'arer'
-  return { Authorization: `${scheme} ${token}` }
-}
-
-async function request(path, options = {}) {
-  const response = await fetch(`${API_URL}${path}`, { headers: { 'Content-Type': 'application/json', ...options.headers }, ...options })
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Request failed' }))
-    if (response.status === 401 && onUnauthorized) onUnauthorized(error.detail || 'Session expired. Please log in again.')
-    const exception = new Error(error.detail || 'Request failed')
-    exception.status = response.status
-    throw exception
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item?.msg && item?.loc) return `${item.loc.join(" -> ")}: ${item.msg}`;
+        if (item?.msg) return item.msg;
+        return JSON.stringify(item);
+      })
+      .join(", ");
   }
-  return response.json()
+
+  if (typeof detail === "object") {
+    if (detail.msg) return detail.msg;
+    return JSON.stringify(detail);
+  }
+
+  return String(detail);
 }
 
-export const api = {
-  setUnauthorizedHandler: handler => { onUnauthorized = handler },
-  registerStudent: data => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
-  loginStudent: data => request('/auth/login/student', { method: 'POST', body: JSON.stringify(data) }),
-  loginAdmin: data => request('/auth/login/admin', { method: 'POST', body: JSON.stringify(data) }),
-  listIncidents: token => request('/incidents', { headers: withAuth(token) }),
-  summary: token => request('/incidents/stats/summary', { headers: withAuth(token) }),
-  createIncident: (token, data) => request('/incidents', { method: 'POST', headers: withAuth(token), body: JSON.stringify(data) }),
-  updateStatus: (token, id, status) => request(`/incidents/${id}/status`, { method: 'PATCH', headers: withAuth(token), body: JSON.stringify({ status, note: `Status changed to ${status}` }) })
+async function request(url, options = {}) {
+  const token = localStorage.getItem("token");
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    throw new Error(formatApiError(data?.detail || data || response.statusText));
+  }
+
+  return data;
 }
