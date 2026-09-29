@@ -9,8 +9,6 @@ Status = Literal["open", "acknowledged", "in_progress", "resolved", "closed"]
 
 
 class IncidentCreate(BaseModel):
-    reporter_name: str = Field(min_length=2, max_length=100)
-    reporter_email: EmailStr
     title: str = Field(min_length=5, max_length=150)
     description: str = Field(min_length=10, max_length=2000)
     category: Category
@@ -21,7 +19,6 @@ class IncidentCreate(BaseModel):
 class StatusUpdate(BaseModel):
     status: Status
     note: str | None = Field(default=None, max_length=500)
-    changed_by: str = Field(default="admin", min_length=2, max_length=100)
 
 
 class HistoryOut(BaseModel):
@@ -56,3 +53,26 @@ class IncidentSummary(BaseModel):
     in_progress: int
     resolved: int
     critical: int
+
+
+class RegisterStudentRequest(BaseModel):
+    full_name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+
+class AuthUserOut(BaseModel):
+    full_name: str
+    email: EmailStr
+    role: Literal["student", "admin"]
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: AuthUserOut
