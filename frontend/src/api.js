@@ -3,7 +3,11 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 function getToken() {
   return localStorage.getItem("token");
 }
+let unauthorizedHandler = null;
 
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler;
+}
 function formatError(detail) {
   if (!detail) return "Something went wrong";
   if (typeof detail === "string") return detail;
@@ -16,7 +20,10 @@ function formatError(detail) {
   return JSON.stringify(detail);
 }
 
-async function request(url, options = {}) {
+async function request(
+  if (res.status === 401 && unauthorizedHandler) {
+  unauthorizedHandler();
+}url, options = {}) {
   const token = getToken();
   const headers = {
     "Content-Type": "application/json",
@@ -118,6 +125,7 @@ const api = {
   getMe,
   setToken,
   clearToken,
+  setUnauthorizedHandler,
 };
 
 export default api;
