@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api } from './api'
+import api from "./api";
 
 const SESSION_KEY = 'campuspulse.session'
 const categories = ['wifi', 'electricity', 'lab', 'transport', 'canteen', 'cleanliness', 'other']
