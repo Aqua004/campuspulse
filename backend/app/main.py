@@ -4,14 +4,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from . import crud
 from .config import settings
 from .database import Base, SessionLocal, engine
+from .routers.auth import router as auth_router
 from .routers.incidents import router as incidents_router
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    with SessionLocal() as database:
+        crud.seed_initial_admin(
+            database,
+            settings.initial_admin_name,
+            settings.initial_admin_email,
+            settings.initial_admin_password,
+        )
     yield
 
 
@@ -23,6 +32,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(auth_router, prefix="/api")
 app.include_router(incidents_router, prefix="/api")
 
 

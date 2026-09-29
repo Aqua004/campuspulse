@@ -20,6 +20,12 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://campuspulse:change-me@db:5432/campuspulse}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      INITIAL_ADMIN_NAME: ${INITIAL_ADMIN_NAME:-Campus Admin}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-admin@campuspulse.example}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-change-this-local-admin-password}
     ports:
       - "8000:8000"
     depends_on:
