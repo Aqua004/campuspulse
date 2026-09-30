@@ -34,6 +34,9 @@ export async function loginStudent(email, password) {
   if (!res.ok) throw new Error(formatError(data?.detail || res.statusText));
   return data;
 }
+if (res.status === 401 && _unauthorizedHandler) {
+  _unauthorizedHandler();
+}
 
 export async function loginAdmin(email, password) {
   const form = new URLSearchParams({ username: email, password });
@@ -68,3 +71,12 @@ export async function getMe() { return request("/api/auth/me"); }
 const api = { loginStudent, loginAdmin, registerStudent, getIncidents, getMyIncidents, createIncident, updateIncidentStatus, getStats, getMe, setToken, clearToken };
 export default api;
 export { api };
+let _unauthorizedHandler = null;
+
+export function setUnauthorizedHandler(handler) {
+  _unauthorizedHandler = handler;
+}
+
+export function getUnauthorizedHandler() {
+  return _unauthorizedHandler;
+}
